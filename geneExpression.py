@@ -7,7 +7,6 @@ import time
 PSSMTuple = namedtuple("PSSMTuple", "pos neg")
 interactionTuple = namedtuple("interactionTuple", "tf1 tf2 weight")
 
-a=1+1
 class MotifGenerator():
 	""" produces random PWMs from dirichlet distributions with different alphas for each nucleotide. No instance of this class should be generated (lacks constructor);
 		most of the variables are constants and are assumed to be parameters of the model. Uses the following algorithm to generate PSSMs:
