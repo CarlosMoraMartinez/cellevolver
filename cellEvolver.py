@@ -7,9 +7,10 @@ import copy
 import _pickle as pck 
 #import cPickle as pck
 
-
 '''Read files with .cemod extension and produce a dictionary with simulation parameters'''
 
+
+a=1+1
 class modelReader(object):
 	def readModelFile(self, model_def_file = None):
 		assert(model_def_file.endswith('.cemod'))
