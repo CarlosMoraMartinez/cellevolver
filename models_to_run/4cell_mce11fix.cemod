@@ -1,0 +1,79 @@
+##About this format:
+#
+##A dictionary with model parameters is defined. The character separating parameter name (key) and value should be ':'.
+## 1)If a parameter value is scalar, nothing else is needed to declare it, just write in a line, for example:
+##		parameter_name:5
+## 2)If, otherwise, a parameter value is a list, you should declare it as 
+##		parameter_name:$list_name
+## 3)If the parameter value is a dictionary, declare it as 
+##		parameter_name:_dictionary_name
+## 4)Then you have to declare each list or dictionary in a separate line, using as key name the list/dictionary name you used when declaring the parameter
+##	- list values should be separated by spaces. Again, if one element of the list is itself a list or dictinary, you should replace it with an alias starting with '$' or '_' respectively:
+##		$list_name:0 1 2 3 $list_name2 4 5 _dict_name2
+##	- dictionary elements should be separated by commas ','. Within each element, the key and the value should be separated by a space. Again, dictionary values can be other lists of dictionaries:
+##		_dictionary_name:key1 0,key2 1,key3 $list_name3,key4 _dict_name3,key5 string_value,key6 18.0
+## 5)The result will be a dictionary where all the list/dictionary aliases have been replaced by their values. Be careful with extra space characters and with integer/float specifications
+## 6)To add explanations about the parameters, etc, add a new line starting with '#'
+#
+#
+# MODEL NAME: mce11
+# 6 cells, 5 pan_neuronal + 5 specific of each cell + 5 shared by 3 cells; starting with 1 TF active in each cell
+# 2017-12-23 Carlos Mora
+# 
+#
+##Genome size and length of each sequence
+gsize:50
+seqlen:150
+##TFSet (transcription factor set) parameters. If none they will be generated at random
+tf_num:15
+tf_dir:%tfdir
+%tfdir:[1 for i in range(0, 10)] + [0 for i in range(10, 15)]
+tf_kmax:None
+tf_alphasbtm:None
+tf_interactions:None
+##Different Km for activator and inhibitor TF types
+tf_difKmax:True
+##number of transcription factors initially expressed in any cell
+tf_lineage:4
+num_cells:4
+mut_rate:0.005
+rec_rate:0.2
+background:_background
+selection_args:$selection_args
+##probability of each nucleotide in genome
+_background:A 0.25,C 0.25,G 0.25,T 0.25
+##pan_genes, specific_genes, celltypes, cells_per_type, cellstrings
+$selection_args:5 5 6 $cells_per_type $cellstrings
+$cells_per_type:1 1 1 1
+$cellstrings:$initial $optimal $type
+$initial:%i0 %i1 %i2 %i3
+$optimal:%o0 %o1 %o2 %o3
+$type:0 1 2 3
+#initial TF express for each cell
+%i0:[1, 0, 0, 0] + [0 for i in range(4, 50)]
+%i1:[0, 1, 0, 0] + [0 for i in range(4, 50)]
+%i2:[0, 0, 1, 0] + [0 for i in range(4, 50)]
+%i3:[0, 0, 0, 1] + [0 for i in range(4, 50)]
+#optimal expression for each cell. There is no optimal value for TFs (will be removed in program)
+%o0:[0 for i in range(0, 15)] + [3 for i in range(15, 20)] + [3 if(i>=20 and i < 35)  else 0 for i in range(20, 50)] 
+%o1:[0 for i in range(0, 15)] + [3 for i in range(15, 20)] + [3 if((i>=20 and i < 25) or (i>=35 and i < 45)) else 0 for i in range(20, 50)]
+%o2:[0 for i in range(0, 15)] + [3 for i in range(15, 20)] + [3 if((i>=25 and i < 30) or (i>=35 and i < 40) or (i >= 45 and i < 50)) else 0 for i in range(20, 50)] 
+%o3:[0 for i in range(0, 15)] + [3 for i in range(15, 20)] + [3 if((i>=30 and i < 35) or (i>=40 and i < 50)) else 0 for i in range(20, 50)]
+#
+#
+#Class used to run gene expression simulation inside a cell (differential equation system; so far, ODERunner is standard and ODERunnerChromatin includes effects of chromatin)
+#
+ODE_RUNNER_CLASS:ODERunner
+ORGANISM_CLASS:Organism
+#
+#Parameters passed to ODE_RUNNER constructor. Only the first 5 are present in the standard ODERunner
+#
+#betas: degradation rate of mRNA
+#with_interactions: consider interactions between TFs or not (cooperativity ON or OFF)
+#h: size of time steps
+#tmax: time for cell differentiation (number of time steps will be tmax/h)
+#min_variation: if no gene concentration varies more than min_variation in a timestep, simulation is concluded (assumes stability)
+#
+#
+sim_params:$sim_params
+$sim_params:0.2 False 1 10 0.001
