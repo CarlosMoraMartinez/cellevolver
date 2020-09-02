@@ -1,10 +1,12 @@
 import geneExpression as gx
 import numpy as np
+import pandas as pd
 import sys
 from scipy.stats import gmean
 import abc
 import copy
 import _pickle as pck 
+import time
 #import cPickle as pck
 
 '''Read files with .cemod extension and produce a dictionary with simulation parameters'''
@@ -424,7 +426,13 @@ class Organism():
 			self.expression.append(ode_calculator.run(self.ann, self.template.getInitialConcentrations(cell), storeCon = True, fullSeq=True, seqlen = self.template.seq_length))
 
 
-''' This class performs the simulations. The method getNewGeneration contains the core of the genetic algorithm. With parrun a simulation is run with multiprocessing; with basicrun no multiprocessing is used. Each generation, the organisms to reproduce are picked randomly with a probability that is proportional to 1/error^n, with n being the competitive_power variable (intensity of competition)'''
+''' This class performs the simulations. 
+The method getNewGeneration contains the core of the genetic algorithm. 
+With parrun a simulation is run with multiprocessing; 
+with basicrun no multiprocessing is used. 
+Each generation, the organisms to reproduce are picked randomly with a 
+probability that is proportional to 1/error^n, with n being 
+the competitive_power variable (intensity of competition)'''
 class multicellEvolver():
 	DEFAULT_POPULATION_SIZE=24
 	DEFAULT_GENERATIONS = 1500
@@ -510,19 +518,20 @@ class multicellEvolver():
 		competitivity = np.zeros(self.pop_size)
 		mean_comp = 0
 		for g in range(self.generations):
-			if(save and (g+1)%saving_freq == 0):
-				self.saveSelf()
 			self.paramHeuristics(g, mean_comp, np.var(competitivity))
 			i = 0
 			for o in self.population:
 				o.equilibriumExpression(self.gxcalc)
 				competitivity[i] = o.getError()
-				print('org ', i, ' ', competitivity[i], '\t')
+				#print('org ', i, ' ', competitivity[i], '\t')
 				i+=1
 			mean_comp = np.mean(competitivity)
 			print('generation ', g, ': ', mean_comp)
 			if(mean_comp <= self.error):
 				break
+			self.last_generation = g
+			if(save and (g)%saving_freq == 0):
+				self.saveSelf()
 			self.population = self.getNewGeneration(competitivity)
 		return (g, mean_comp)
 	def getNewGeneration(self, error):
@@ -851,9 +860,13 @@ def main():
 	else:
 		mce = multicellTournament(organismclass = Organism, template_org = OrganismTemplate, phenotype_eval = SimplePhenotypeEvaluator, competition = 6, sim_params = None, pop_size = 24, generations = 10000, error = 0.01, modelFile = '4cell_mce1.cemod', sexual = True, predefined_model = 4,  instance_name = iname, k = 12)
 	print(mce.instance_name, ': Initiating simulations...\n')
-	mce.parrun(True, 200)
+
+	start_time = time.time()
+	#mce.parrun(True, 200)
+	mce.basicrun(True, 5)
 	mce.saveSelf()
 	mce.produceDataFrames('btms', iname)
+	print("--- %s minutes ---" % (round((time.time() - start_time)/60, 2)))
 	return mce
 
 if __name__ == "__main__":
