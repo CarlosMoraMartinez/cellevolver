@@ -238,6 +238,8 @@ class simulationHolder(object):
 		output= output.reshape((output.shape[0], output.shape[1]*output.shape[2]))
 		ft = np.array(self.type3[regulators])
 		return (output, ft)
+
+
 class simulationSet(object):
 	def __init__(self, path, cond):
 		if(path.endswith('/')):
@@ -246,7 +248,13 @@ class simulationSet(object):
 		self.cond = cond
 		simnames = list(set(['_'.join(f.split('_')[:-1]) for f in os.listdir(path) if f.endswith('.csv')]))
 		simnames = list(set([i+'_' for i in simnames if(not i.endswith('_'))]))
-		self.simulations = [simulationHolder(s, path) for s in simnames]
+		self.simulations = []
+		for s in simnames:
+			try:
+				self.simulations.append(simulationHolder(s, path))
+			except:
+				print("Error in " + s)
+		#self.simulations = [simulationHolder(s, path) for s in simnames]
 		self.stored_data = []
 	def joinRegExpression(self, types = ['1', '-1'], shape2d = True):
 		if(shape2d):
@@ -436,6 +444,7 @@ class simulationSet(object):
 
 def main():
 	#conditions = ['4cell_mce0', '4cell_mce0fix_mutb', '4cell_mce1fix', '4cell_mce2fix', '4cell_mce2inh5', '4cell_mce0fix', '4cell_mce0_mutb', '4cell_mce1fix_mutb', '4cell_mce2fix_mutb', '4cell_mce2inh5_mutb']
+	#conditions = ['4cell_mce1fix', '4cell_mce2fix', '4cell_mce2inh5', '4cell_mce0fix', '4cell_mce0', '4cell_mce0fix_mutb', ]
 	conditions = ['4cell_mce1fix', '4cell_mce2fix', '4cell_mce2inh5', '4cell_mce0fix', '4cell_mce0', '4cell_mce0fix_mutb', ]
 	#conditions = ['4cell_mce11fix']
 	#paths= ['/home/cmora/cellevolver_shared/simul_tables/' + i for i in conditions]

@@ -1,10 +1,11 @@
 modelformat=".cemod"
 namehead=$1
 numsims=$2
-maxCPU=10
+maxCPU=32
 free=0
 
-for model in 4cell_mce1inh5Xss 4cell_mce2inh5Xss 4cell_mce0
+#4cell_mce1inh5Xss 4cell_mce2inh5Xss 4cell_mce0
+for model in 4cell_mce0fixb 4cell_mce2fixb 4cell_mce1fixb 4cell_mce0 4cell_mce2inh5
 do
     modelfile=./models_to_run/$model$modelformat
     mkdir $model
@@ -26,7 +27,7 @@ do
                 mkdir $newdir
                 cp ../*.py $newdir
                 cd $newdir
-                nohup python cellEvolver.py $newdir ../$model$modelformat >$newdir'.out' 2>newdir'.err' &
+                nohup python3 cellEvolver.py $newdir ../$model$modelformat >$newdir'.out' 2>newdir'.err' &
                 cd ../
                 free=$(($free + 1))
                 sleep 3
