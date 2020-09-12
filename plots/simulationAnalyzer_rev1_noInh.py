@@ -251,7 +251,11 @@ class simulationSet(object):
 		self.simulations = []
 		for s in simnames:
 			try:
-				self.simulations.append(simulationHolder(s, path))
+				newsim = simulationHolder(s, path)
+				if(len(newsim.tf_inds)*len(newsim.type) == newsim.mutanttfs.shape[0] ==  newsim.mutantsites.shape[0]):
+					self.simulations.append(newsim)
+				else:
+					print("ERROR: simulation %s looks corrupted: has %d rows instead of %d."%(s, min([newsim.mutanttfs.shape[0],  newsim.mutantsites.shape[0]]), len(newsim.tf_inds)*len(newsim.type)))
 			except:
 				print("Error in " + s)
 		#self.simulations = [simulationHolder(s, path) for s in simnames]
@@ -267,6 +271,7 @@ class simulationSet(object):
 		m = m.reshape((dim0, dim1, 1))
 		sim_types = np.array(self.simulations[0].type3)[self.simulations[0].getRegulators(filt = False, types = types)].reshape((dim0))
 		for i in range(1, len(self.simulations)):
+			print("joinRegExpression ", self.simulations[i].name, " ")
 			m = np.concatenate((m, np.array(self.simulations[i].getRegulatorsExpr(types = types)).reshape((dim0, dim1, 1)) ), axis=ax)
 			sim_types = np.concatenate((sim_types, np.array(self.simulations[i].type3)[self.simulations[i].getRegulators(filt = False, types = types)].reshape((dim0))), axis=0)
 		if(shape2d):
@@ -278,6 +283,7 @@ class simulationSet(object):
 		dim1 = m.shape[1]
 		ax = 0
 		for i in range(1, len(self.simulations)):
+			print("joiningMutEffects ", self.simulations[i].name, " ")
 			aux1, aux4 = self.simulations[i].getSortedMutEffectsByMean(type1, type2, type3, regType1, regType2, regType3, sortByCell, regList, mutation_type, difference_to_wt, error, type_used_sort, sort_gene_in_each_cell)
 			m = np.concatenate((m, aux1), axis=ax)
 			tftype = np.concatenate((tftype, aux4), axis=0)
@@ -456,7 +462,7 @@ def main():
 		print(path, '\n')
 		try:
 			ss=simulationSet(path, cond)	
-			print('read...')
+			print('read %s with %d simulations'%(cond, len(ss.simulations)))
 			ss.makeHeatmaps()
 		except:
 			print("Error in %s"%(cond))

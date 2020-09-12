@@ -70,6 +70,18 @@ makeExpressionBarplots<-function(dataset){
   }
 }
 
+mutType=tf_pattern
+#plotMutants<-function(mutType=tf_pattern){
+  expr_raw <- list.files(recursive = TRUE) %>% subset(grepl(pattern=mutType, .)) %>% .[1:10] %>% 
+    map(function(x){
+      tryCatch(read_tsv(x ) %>% mutate(seqs=NULL, gene = X1, X1 = NULL, fname=x), error = function(e)cat("ERROR reading ", x)
+      )
+    }) %>% bind_rows 
+  types <- expr_raw %>% select(gene, type) %>% distinct %>% as.data.frame
+  expr_raw$tf_type <-  sapply(expr_raw$tf_mutated, function(x) types$type[types$gene==x])
+  
+#}
+
 for(dataset in datasets){
   if(!dir.exists(paste(outdir, dataset, sep="", collapse=""))) dir.create(paste(outdir, dataset, sep="", collapse=""))
   setwd(dataset)
