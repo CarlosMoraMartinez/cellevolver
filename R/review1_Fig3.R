@@ -1,6 +1,7 @@
 library(tidyverse)
 
-setwd("/home/carmoma/projects/cellevolver/data/all_tables")
+#setwd("/home/carmoma/projects/cellevolver/data/all_tables")
+setwd("/home/carmoma/projects/cellevolver/200816_PLOSoNE_review1_making/200912_data_heatmaps_activators")
 outdir = "/home/carmoma/projects/cellevolver/augustplots/"
 if(!dir.exists(outdir)) dir.create(outdir)
 
@@ -202,4 +203,16 @@ for (file in files){
   }
 }
 
-
+#Also get means table
+for (file in files){
+  d <- readHeatmapFile(file)
+  dsum <- d %>% filter(phenotype != 0) %>% group_by(expr_group) %>% summarise(mean = mean(phenotype), 
+                                                                          median = median(phenotype), 
+                                                                          n = n())
+  dataset <- gsub("_cell0.csv|.csv", "", file)
+  basename <- paste(outdir, dataset, "_Means", sep="", collapse="")
+  write_tsv(dsum, paste(basename, ".tsv", sep="", collapse=""))
+  cat(basename)
+  print(dsum)
+  cat("****")
+}

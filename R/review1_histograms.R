@@ -45,7 +45,7 @@ makeExpressionBarplots<-function(dataset){
     g1<-ggplot(expr_summary, aes(x=active_in_cells, y=prop, color=type, fill=type)) + 
       geom_bar(stat = "identity", alpha=0.6, position="dodge") +
       facet_grid(~type, scales = "free_x", space = "free") +
-      scale_y_continuous(breaks=seq(0,0.6, 0.1), labels = scales::percent(x=seq(0,0.6, 0.1))) + #labels = scales::percent(10), 
+      scale_y_continuous(breaks=seq(0,0.8, 0.1), labels = scales::percent(x=seq(0,0.8, 0.1))) + #labels = scales::percent(10), 
       scale_color_manual(values=colorscheme) + 
       scale_fill_manual(values=colorscheme) + 
       theme(axis.text.x = element_text(color = "#000000", size = 15, angle=0, debug=FALSE, vjust = 1.0, hjust=1 ),
