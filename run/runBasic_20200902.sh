@@ -1,11 +1,11 @@
 modelformat=".cemod"
 namehead=$1
 numsims=$2
-maxCPU=32
+maxCPU=10
 free=0
 
 #4cell_mce1inh5Xss 4cell_mce2inh5Xss 4cell_mce0
-for model in 4cell_mce0fixb 4cell_mce2fixb 4cell_mce1fixb 4cell_mce0 4cell_mce2inh5
+for model in 4cell_mce0fixb 4cell_mce2fixb 4cell_mce1fixb 4cell_mce0 4cell_mce2inh5 4cell_mce2inh5Xss 4cell_mce0Xss
 do
     modelfile=./models_to_run/$model$modelformat
     mkdir $model

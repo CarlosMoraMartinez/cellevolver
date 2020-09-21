@@ -532,6 +532,7 @@ class multicellEvolver():
 			self.last_generation = g
 			if(save and (g)%saving_freq == 0):
 				self.saveSelf()
+				#self.saveAllAnnotations()
 			self.population = self.getNewGeneration(competitivity)
 		return (g, mean_comp)
 	def getNewGeneration(self, error):
@@ -551,8 +552,13 @@ class multicellEvolver():
 	def saveSelf(self):
 		filename = self.instance_name + 'g' + str(self.last_generation) + '.pck'
 		with open(filename, 'wb') as output: 
- 			pickler = pck.Pickler(output, -1)
- 			pickler.dump(self)
+			pickler = pck.Pickler(output, -1)
+			pickler.dump(self)
+		#self.produceDataFrames('b', self.instance_name + 'g' + str(self.last_generation))
+	def saveAllAnnotations(self):
+		for i, o in enumerate(self.population):
+			name = self.instance_name + 'g' + str(self.last_generation) + 'o' + str(i)
+			self.annotationToDF(o, name)
 	def setComp(self, cp):
 		self.competitive_power = cp
 		self.param_history.append({'generation':self.last_generation,'mut_rate':self.template.mut_rate,'k':self.k})
@@ -863,7 +869,7 @@ def main():
 
 	start_time = time.time()
 	#mce.parrun(True, 200)
-	mce.basicrun(True, 5)
+	mce.basicrun(True, 100)
 	mce.saveSelf()
 	mce.produceDataFrames('btms', iname)
 	print("--- %s minutes ---" % (round((time.time() - start_time)/60, 2)))

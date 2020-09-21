@@ -2,12 +2,12 @@
 
 library(tidyverse)
 #Load simulation data
-setwd("/home/carmoma/projects/cellevolver/cellevolver/history_sims/")
+setwd("/home/carmoma/projects/cellevolver/cellevolver/history_sims_allIndividuals//")
 
-outdir = "/home/carmoma/projects/cellevolver/historyplots/"
+outdir = "/home/carmoma/projects/cellevolver/historyplots_byInd/"
 if(!dir.exists(outdir)) dir.create(outdir)
 
-annpattern <- "g[0-9]+_annotation.csv"
+annpattern <- "g[0-9]+o[0-9]+_annotation.csv"
 types <- c(rep("tf", 15), rep("terminal all", 5), rep("terminal 1 cell", 20))
 tf_types <- c(rep("activator" ,11), rep("inhibitor", 4))
 colorscheme <-c("Activator"="dodgerblue", 
@@ -41,15 +41,15 @@ getFullAnnotationHistory <- function(cond, sim){
   dir <- paste(cond, sim, sep="/", collapse="")
   files <- list.files(dir) %>% subset(grepl(annpattern, .)) 
   allann <- files %>%
-          map(function(x)read_tsv(paste(dir, x, sep="/", collapse="")) %>% 
-                mutate(generation=str_extract(x, "g[0-9]+o") %>% gsub("g|o", "", .) %>% as.numeric),
-                mutate(organism=str_extract(x, "o[0-9]+_") %>% gsub("o|_", "", .) %>% as.numeric)
+          map(function(x) read_tsv(paste(dir, x, sep="/", collapse="")) %>% 
+                mutate(generation=str_extract(x, "g[0-9]+o") %>% gsub("g|o", "", .) %>% as.numeric,
+                       organism=str_extract(x, "o[0-9]+_") %>% gsub("o|_", "", .) %>% as.numeric)
               ) %>%
   bind_rows
   return(allann)
 }
 
-getAnnotationSummary<-function(sim, cond){
+getAnnotationSummary<-function(sim, cond, write=TRUE){
   #allann <- getFullAnnotationHistorySingleInd(cond, sim)
   allann <- getFullAnnotationHistory(cond, sim)
   summbymot <- allann %>% unite(col="motifId", gene, positions, tf_ind, sep="_", remove=FALSE) %>% 
@@ -68,6 +68,10 @@ getAnnotationSummary<-function(sim, cond){
          sim = str_extract(sim, "s[0-9]+$")
          ) %>% 
     unite("globalMotifId", sim, motifId, remove=FALSE, sep="_")
+  if(write){
+    outfname <- paste(sim, "_summaryByMotif.tsv", sep="", collapse="")
+    write_tsv(summbymot, outfname)
+  }
   return(summbymot)
 }
 
@@ -89,18 +93,25 @@ getMeansTable <- function(d, discard_generations = -1){
   return(d3)
 }
 
+
+
 conditions <- list.files()
-cond <- conditions[1]
-sims <- list.files(cond) %>% subset(!grepl("\\.", .))
-sim <- sims[1]
-
-
-d <- sims %>% map(getAnnotationSummary, cond) %>% bind_rows
-d2 <- d %>% filter(gene_type != "tf", start > 250) 
-d3 <- getMeansTable(d)
-d3 <- getMeansTable(d, 200)
-d3 <- getMeansTable(d, 350)
-
+#cond <- conditions[1]
+for(cond in conditions){
+  sims <- list.files(cond) %>% subset(!grepl("\\.", .))
+  d <- sims %>% map(getAnnotationSummary, cond) %>% bind_rows
+  fname <- paste(cond, "_allInds_annotationSummary.tsv", sep="", collapse="")
+  write_tsv(d, fname)
+  d2 <- getMeansTable(d)
+  fname <- paste(cond, "_allInds_meanMotifLife.tsv", sep="", collapse="")
+  write_tsv(d2, fname)
+  d2 <- getMeansTable(d, 200)
+  fname <- paste(cond, "_allInds_meanMotifLife_fromGen200.tsv", sep="", collapse="")
+  write_tsv(d2, fname)
+  d2 <- getMeansTable(d, 350)
+  fname <- paste(cond, "_allInds_meanMotifLife_fromGen350.tsv", sep="", collapse="")
+  write_tsv(d2, fname)
+}
 
 (g1<-ggplot(d, aes(x=start, color=gene_type, fill=gene_type)) + 
     geom_histogram(aes(y=..count../sum(..count..)*100), position = "dodge") +
